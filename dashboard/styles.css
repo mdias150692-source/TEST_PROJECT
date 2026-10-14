@@ -57,7 +57,9 @@ body {
   min-width: 0;
 }
 .card.full { grid-column: 1 / -1; }
-.chart { overflow-x: auto; }
+/* vega-embed puts its own .vega-embed {display:inline-block} on this element; without the override
+   a wide chart stretches the whole page on phones instead of scrolling inside its card. */
+.chart, .chart.vega-embed { display: block; max-width: 100%; overflow-x: auto; }
 h2 { font-size: 15px; margin: 0 0 10px; font-weight: 600; }
 .table-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }

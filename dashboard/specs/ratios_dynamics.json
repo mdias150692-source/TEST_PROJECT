@@ -11,7 +11,7 @@
       {"op": "max", "field": "report_date", "as": "last_date"}
     ], "groupby": ["metric"]}
   ],
-  "width": 420,
+  "width": 340,
   "height": {"step": 40},
   "encoding": {
     "y": {
