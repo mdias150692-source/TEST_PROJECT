@@ -1,0 +1,48 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Roll-rate matrix: loan state on 01.09 (rows) -> state on 01.10 (columns). Colour = amount on 01.09, number = loan count (reporting.v_dpd_migration).",
+  "title": {"text": "Миграция по корзинам просрочки", "subtitle": "строки — 01.09, столбцы — 01.10; цвет — остаток на 01.09, число — кредиты", "anchor": "start"},
+  "data": {"url": "data/migration.json"},
+  "transform": [
+    {"calculate": "datum.amount_kzt_from / 1e9", "as": "bn"},
+    {"calculate": "{'0': 'Без просрочки', '1-30': '1–30 дн.', '31-90': '31–90 дн.', '90+': '90+ дн.', 'restructured': 'Реструкт. (≤90)', 'written_off': 'Списан'}", "as": "names"},
+    {"calculate": "datum.names[datum.from_state]", "as": "from_label"},
+    {"calculate": "datum.names[datum.to_state]", "as": "to_label"},
+    {"joinaggregate": [{"op": "sum", "field": "loans_cnt", "as": "row_cnt"}], "groupby": ["from_state"]},
+    {"calculate": "datum.loans_cnt / datum.row_cnt", "as": "row_share"}
+  ],
+  "width": 420,
+  "height": 240,
+  "encoding": {
+    "x": {"field": "to_label", "type": "ordinal", "title": "Состояние на 01.10",
+          "sort": ["Без просрочки", "1–30 дн.", "31–90 дн.", "90+ дн.", "Реструкт. (≤90)", "Списан"],
+          "axis": {"labelAngle": 0, "orient": "top", "domain": false, "ticks": false, "labelFontSize": 10}},
+    "y": {"field": "from_label", "type": "ordinal", "title": "Состояние на 01.09",
+          "sort": ["Без просрочки", "1–30 дн.", "31–90 дн.", "90+ дн.", "Реструкт. (≤90)", "Списан"],
+          "axis": {"domain": false, "ticks": false}}
+  },
+  "layer": [
+    {
+      "mark": {"type": "rect", "cornerRadius": 3},
+      "encoding": {
+        "color": {"field": "bn", "type": "quantitative", "title": "млрд ₸",
+                  "scale": {"type": "sqrt", "range": ["#cde2fb", "#104281"]},
+                  "legend": {"orient": "right", "gradientLength": 160, "format": ",.0f"}},
+        "tooltip": [
+          {"field": "from_label", "title": "01.09"},
+          {"field": "to_label", "title": "01.10"},
+          {"field": "loans_cnt", "title": "Кредитов"},
+          {"field": "row_share", "title": "Доля строки (шт.)", "format": ".0%"},
+          {"field": "amount_kzt_from", "title": "Остаток на 01.09, ₸", "format": ",.0f"}
+        ]
+      }
+    },
+    {
+      "mark": {"type": "text", "fontSize": 12},
+      "encoding": {
+        "text": {"field": "loans_cnt", "type": "quantitative", "format": ",d"},
+        "color": {"condition": {"test": "datum.bn > 40", "value": "#ffffff"}, "value": "#0b0b0b"}
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+# Semantic model over the headline metrics view.
+# Grain: one row per report_date, so sum/avg by report_date return the value itself.
+# Ratios are computed in SQL as SUM(numerator) / SUM(portfolio) — do not average
+# them across dates.
+
+model: portfolio_metrics
+label: Риск-метрики портфеля (по датам среза)
+source: reporting.v_portfolio_metrics
+
+dimensions:
+  - name: report_date
+    column: report_date
+    type: date
+    label: Дата среза
+
+measures:
+  - name: portfolio_kzt
+    column: portfolio_kzt
+    type: sum
+    format: "#,##0 ₸"
+    label: Портфель, ₸
+  - name: loans_cnt
+    column: loans_cnt
+    type: sum
+    format: "#,##0"
+    label: Количество кредитов
+  - name: provisions_kzt
+    column: provisions_kzt
+    type: sum
+    format: "#,##0 ₸"
+    label: Провизии, ₸
+  - name: par30_ratio
+    column: par30_ratio
+    type: avg
+    format: "0.00%"
+    label: PAR30
+  - name: par90_ratio
+    column: par90_ratio
+    type: avg
+    format: "0.00%"
+    label: PAR90
+  - name: npl_ratio
+    column: npl_ratio
+    type: avg
+    format: "0.00%"
+    label: NPL
+  - name: provision_coverage
+    column: provision_coverage
+    type: avg
+    format: "0.00%"
+    label: Провизии / портфель
+  - name: provisions_to_npl
+    column: provisions_to_npl
+    type: avg
+    format: "0.00%"
+    label: Провизии / NPL
+  - name: top10_concentration
+    column: top10_concentration
+    type: avg
+    format: "0.00%"
+    label: Концентрация топ-10 групп

@@ -1,0 +1,6 @@
+[{"check_name":"exact_duplicates_removed","description":"Удалено полных дублей строк","value":60}, 
+ {"check_name":"fx_not_on_report_date","description":"Кредитов с курсом не на дату среза","value":0}, 
+ {"check_name":"past_maturity_active","description":"Активных кредитов с истёкшим сроком (обе даты)","value":859}, 
+ {"check_name":"raw_rows","description":"Строк в raw.portfolio","value":4060}, 
+ {"check_name":"write_off_reversals","description":"Кредитов: списан на 01.09, активен на 01.10","value":23}, 
+ {"check_name":"written_off_excluded","description":"Списанных кредитов исключено (обе даты)","value":33}]

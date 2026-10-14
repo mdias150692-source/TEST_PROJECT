@@ -1,0 +1,45 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Headline risk metrics on the latest snapshot with change vs 01.09.2026 (reporting.v_portfolio_metrics_change).",
+  "data": {"url": "data/metrics.json"},
+  "transform": [
+    {"filter": "datum.sort_order <= 8"},
+    {"joinaggregate": [{"op": "max", "field": "report_date", "as": "last_date"}]},
+    {"filter": "datum.report_date === datum.last_date"},
+    {"calculate": "datum.unit === 'kzt' ? format(datum.value / 1e9, ',.1f') + ' млрд ₸' : datum.unit === 'ratio' ? format(datum.value, '.2%') : format(datum.value, ',d')", "as": "value_txt"},
+    {"calculate": "(datum.change_abs > 0 ? '▲ ' : datum.change_abs < 0 ? '▼ ' : '') + (datum.unit === 'ratio' ? format(datum.change_abs * 100, '+.2f') + ' п.п.' : datum.unit === 'kzt' ? format(datum.change_abs / 1e9, '+,.1f') + ' млрд (' + format(datum.change_rel, '+.1%') + ')' : format(datum.change_abs, '+d')) + ' к ' + utcFormat(toDate(datum.base_date), '%d.%m')", "as": "delta_txt"}
+  ],
+  "facet": {
+    "field": "sort_order",
+    "type": "ordinal",
+    "header": {"title": null, "labelExpr": "''", "labelPadding": 0, "labelFontSize": 0}
+  },
+  "columns": 4,
+  "spacing": {"row": 12, "column": 12},
+  "spec": {
+    "width": 230,
+    "height": 92,
+    "view": {"stroke": null},
+    "layer": [
+      {
+        "mark": {"type": "text", "align": "left", "baseline": "top", "x": 4, "y": 6, "fontSize": 13, "opacity": 0.72},
+        "encoding": {"text": {"field": "label"}}
+      },
+      {
+        "mark": {"type": "text", "align": "left", "baseline": "middle", "x": 4, "y": 46, "fontSize": 26, "fontWeight": 600},
+        "encoding": {
+          "text": {"field": "value_txt"},
+          "tooltip": [
+            {"field": "label", "title": "Метрика"},
+            {"field": "value", "title": "Значение", "format": ",.6~f"},
+            {"field": "base_value", "title": "На базовую дату", "format": ",.6~f"}
+          ]
+        }
+      },
+      {
+        "mark": {"type": "text", "align": "left", "baseline": "bottom", "x": 4, "y": 88, "fontSize": 12, "opacity": 0.72},
+        "encoding": {"text": {"field": "delta_txt"}}
+      }
+    ]
+  }
+}

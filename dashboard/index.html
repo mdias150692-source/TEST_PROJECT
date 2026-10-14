@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Vega compiles expressions with new Function(), hence 'unsafe-eval'; vega-embed injects its own styles. -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Риск-сводка портфеля</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/vega@5.30.0/build/vega.min.js"
+          integrity="sha384-em7CHpJd+SsMugVFf6TY7AKQcLWMcbPhD84hmNK8o6WFDkK+2uHSUQRVQV1/w827" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.21.0/build/vega-lite.min.js"
+          integrity="sha384-GhkD6ks9/zgY1m5EFOUZWz/vMVMUFF/92DL61RZc+B42J8osL+jNufKv68bNHHZ2" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.26.0/build/vega-embed.min.js"
+          integrity="sha384-TqXb8su49m5OnEpKGO8m+VrgHesrUxyP22HgpXi4hnh1Hm43dXroiSYemNf5D8lv" crossorigin="anonymous"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header class="page-head">
+      <div>
+        <h1>Риск-сводка кредитного портфеля</h1>
+        <p class="sub">Синтетический портфель · срезы <span id="dates">—</span> · суммы в тенге по курсу на дату среза, без списанных кредитов</p>
+      </div>
+    </header>
+
+    <section class="card full" aria-label="Ключевые метрики">
+      <div id="kpi" class="chart"></div>
+    </section>
+
+    <div class="grid">
+      <section class="card"><div id="ratios_dynamics" class="chart"></div></section>
+      <section class="card"><div id="portfolio_bridge" class="chart"></div></section>
+      <section class="card full"><div id="breakdown_sector" class="chart"></div></section>
+      <section class="card full"><div id="breakdown_program" class="chart"></div></section>
+      <section class="card"><div id="dpd_migration" class="chart"></div></section>
+      <section class="card"><div id="top_groups" class="chart"></div></section>
+
+      <section class="card">
+        <h2>Метрики: таблица</h2>
+        <div class="table-wrap">
+          <table id="metrics-table">
+            <thead><tr><th>Метрика</th><th class="num" data-col="d0">—</th><th class="num" data-col="d1">—</th><th class="num">Изменение</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Качество данных</h2>
+        <div class="table-wrap">
+          <table id="dq-table">
+            <thead><tr><th>Проверка</th><th class="num">Значение</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="note">
+          Полные дубли строк удалены; списанные кредиты исключены из портфеля на каждую дату.
+          «Возврат из списания» и кредиты с истёкшим сроком оставлены как есть по определению задания — это вопросы к владельцу данных.
+        </p>
+      </section>
+    </div>
+
+    <footer class="foot">
+      <p><b>Определения.</b> PAR30/PAR90 — доля портфеля с просрочкой &gt; 30 / &gt; 90 дней.
+        NPL — просрочка &gt; 90 дней или реструктуризация. Провизии: 1% (0–30 дн.), 10% (31–90 дн.), 50% (NPL).
+        Концентрация — доля 10 крупнейших групп связанных заёмщиков. Источник: <code>reporting.*</code> в PostgreSQL.</p>
+    </footer>
+  </main>
+</body>
+</html>

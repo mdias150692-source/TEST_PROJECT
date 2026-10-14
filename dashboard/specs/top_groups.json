@@ -1,0 +1,52 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Ten largest borrower groups on the latest snapshot: share of portfolio split into performing and NPL (reporting.v_group_exposure).",
+  "title": {"text": "Топ-10 групп связанных заёмщиков", "subtitle": "доля в портфеле на последнюю дату, в т.ч. NPL", "anchor": "start"},
+  "data": {"url": "data/groups.json"},
+  "transform": [
+    {"joinaggregate": [{"op": "max", "field": "report_date", "as": "last_date"}]},
+    {"filter": "datum.report_date === datum.last_date && datum.group_rank <= 10"},
+    {"calculate": "datum.share_of_portfolio * datum.npl_kzt / datum.amount_kzt", "as": "NPL"},
+    {"calculate": "datum.share_of_portfolio - datum.NPL", "as": "Работающий"},
+    {"calculate": "datum.npl_kzt / datum.amount_kzt", "as": "npl_share_in_group"},
+    {"fold": ["Работающий", "NPL"], "as": ["quality", "share"]}
+  ],
+  "width": 420,
+  "height": {"step": 26},
+  "encoding": {
+    "y": {"field": "group_id", "type": "nominal", "title": null,
+          "sort": {"field": "group_rank", "op": "min", "order": "ascending"},
+          "axis": {"domain": false, "ticks": false, "labelPadding": 8}}
+  },
+  "layer": [
+    {
+      "mark": {"type": "bar", "height": {"band": 0.7}},
+      "encoding": {
+        "x": {"field": "share", "type": "quantitative", "stack": "zero", "title": null, "axis": {"format": ".1%", "grid": true}},
+        "color": {"field": "quality", "type": "nominal", "title": null,
+                  "scale": {"domain": ["Работающий", "NPL"], "range": ["#2a78d6", "#eb6834"]},
+                  "legend": {"orient": "top", "direction": "horizontal"}},
+        "order": {"field": "quality", "sort": "descending"},
+        "tooltip": [
+          {"field": "group_id", "title": "Группа"},
+          {"field": "group_rank", "title": "Ранг"},
+          {"field": "amount_kzt", "title": "Остаток, ₸", "format": ",.0f"},
+          {"field": "share_of_portfolio", "title": "Доля портфеля", "format": ".2%"},
+          {"field": "npl_share_in_group", "title": "NPL внутри группы", "format": ".0%"},
+          {"field": "loans_cnt", "title": "Кредитов"}
+        ]
+      }
+    },
+    {
+      "transform": [
+        {"filter": "datum.quality === 'NPL'"},
+        {"calculate": "format(datum.share_of_portfolio, '.1%') + (datum.npl_share_in_group > 0.05 ? '  · NPL ' + format(datum.npl_share_in_group, '.0%') : '')", "as": "txt"}
+      ],
+      "mark": {"type": "text", "align": "left", "dx": 6, "fontSize": 11},
+      "encoding": {
+        "x": {"field": "share_of_portfolio", "type": "quantitative"},
+        "text": {"field": "txt"}
+      }
+    }
+  ]
+}

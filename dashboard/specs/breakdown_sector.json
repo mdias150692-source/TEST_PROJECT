@@ -1,0 +1,111 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Portfolio, PAR30 and NPL by sector on both snapshots (reporting.v_portfolio_breakdown, dimension = sector).",
+  "title": {"text": "Разрез по отраслям", "subtitle": "портфель на последнюю дату; PAR30 и NPL — 01.09 → 01.10", "anchor": "start"},
+  "data": {"url": "data/breakdown.json"},
+  "transform": [
+    {"filter": "datum.dimension === 'sector'"},
+    {"calculate": "utcFormat(toDate(datum.report_date), '%d.%m.%Y')", "as": "date_label"},
+    {"joinaggregate": [{"op": "max", "field": "report_date", "as": "last_date"}]},
+    {"calculate": "datum.portfolio_kzt / 1e9", "as": "bn"}
+  ],
+  "spacing": 24,
+  "hconcat": [
+    {
+      "width": 230,
+      "height": {"step": 34},
+      "transform": [{"filter": "datum.report_date === datum.last_date"}],
+      "encoding": {
+        "y": {"field": "dimension_value", "type": "nominal", "title": null,
+              "sort": {"field": "portfolio_kzt", "op": "max", "order": "descending"},
+              "axis": {"domain": false, "ticks": false, "labelPadding": 8}}
+      },
+      "layer": [
+        {
+          "mark": {"type": "bar", "cornerRadiusEnd": 4, "height": {"band": 0.6}, "color": "#2a78d6"},
+          "encoding": {
+            "x": {"field": "bn", "type": "quantitative", "title": "Портфель, млрд ₸", "axis": {"format": ",.0f", "grid": true}},
+            "tooltip": [
+              {"field": "dimension_value", "title": "Отрасль"},
+              {"field": "portfolio_kzt", "title": "Портфель, ₸", "format": ",.0f"},
+              {"field": "share_of_portfolio", "title": "Доля", "format": ".1%"},
+              {"field": "portfolio_change_kzt", "title": "Изм. к 01.09, ₸", "format": "+,.0f"},
+              {"field": "loans_cnt", "title": "Кредитов"}
+            ]
+          }
+        },
+        {
+          "transform": [{"calculate": "format(datum.share_of_portfolio, '.0%')", "as": "share_txt"}],
+          "mark": {"type": "text", "align": "left", "dx": 5, "fontSize": 11, "opacity": 0.72},
+          "encoding": {"x": {"field": "bn", "type": "quantitative"}, "text": {"field": "share_txt"}}
+        }
+      ]
+    },
+    {
+      "width": 200,
+      "height": {"step": 34},
+      "encoding": {
+        "y": {"field": "dimension_value", "type": "nominal", "title": null,
+              "sort": {"field": "portfolio_kzt", "op": "max", "order": "descending"},
+              "axis": {"labels": false, "domain": false, "ticks": false}}
+      },
+      "layer": [
+        {
+          "mark": {"type": "rule", "strokeWidth": 2, "opacity": 0.35},
+          "encoding": {
+            "x": {"aggregate": "min", "field": "par30_ratio", "type": "quantitative"},
+            "x2": {"aggregate": "max", "field": "par30_ratio"}
+          }
+        },
+        {
+          "mark": {"type": "point", "filled": true, "size": 110, "opacity": 1},
+          "encoding": {
+            "x": {"field": "par30_ratio", "type": "quantitative", "title": "PAR30", "axis": {"format": ".0%", "grid": true, "tickCount": 4}, "scale": {"domainMin": 0}},
+            "color": {"field": "date_label", "type": "ordinal", "title": "Дата среза",
+                      "scale": {"range": ["#86b6ef", "#1c5cab"]}, "legend": {"orient": "top", "direction": "horizontal"}},
+            "tooltip": [
+              {"field": "dimension_value", "title": "Отрасль"},
+              {"field": "date_label", "title": "Дата"},
+              {"field": "par30_ratio", "title": "PAR30", "format": ".2%"},
+              {"field": "par30_kzt", "title": "PAR30, ₸", "format": ",.0f"}
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "width": 200,
+      "height": {"step": 34},
+      "encoding": {
+        "y": {"field": "dimension_value", "type": "nominal", "title": null,
+              "sort": {"field": "portfolio_kzt", "op": "max", "order": "descending"},
+              "axis": {"labels": false, "domain": false, "ticks": false}}
+      },
+      "layer": [
+        {
+          "mark": {"type": "rule", "strokeWidth": 2, "opacity": 0.35},
+          "encoding": {
+            "x": {"aggregate": "min", "field": "npl_ratio", "type": "quantitative"},
+            "x2": {"aggregate": "max", "field": "npl_ratio"}
+          }
+        },
+        {
+          "mark": {"type": "point", "filled": true, "size": 110, "opacity": 1},
+          "encoding": {
+            "x": {"field": "npl_ratio", "type": "quantitative", "title": "NPL", "axis": {"format": ".0%", "grid": true, "tickCount": 4}, "scale": {"domainMin": 0}},
+            "color": {"field": "date_label", "type": "ordinal", "title": "Дата среза",
+                      "scale": {"range": ["#86b6ef", "#1c5cab"]}},
+            "tooltip": [
+              {"field": "dimension_value", "title": "Отрасль"},
+              {"field": "date_label", "title": "Дата"},
+              {"field": "npl_ratio", "title": "NPL", "format": ".2%"},
+              {"field": "npl_kzt", "title": "NPL, ₸", "format": ",.0f"},
+              {"field": "provisions_kzt", "title": "Провизии, ₸", "format": ",.0f"}
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "resolve": {"scale": {"color": "shared"}}
+}

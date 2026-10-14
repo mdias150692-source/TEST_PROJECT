@@ -1,0 +1,6 @@
+[{"from_date":"2026-09-01","to_date":"2026-10-01","step_order":1,"step":"portfolio_start","label":"Портфель на начало","amount_kzt":498153228694.57300000}, 
+ {"from_date":"2026-09-01","to_date":"2026-10-01","step_order":2,"step":"repayments","label":"Погашения","amount_kzt":-18506977997.49200000}, 
+ {"from_date":"2026-09-01","to_date":"2026-10-01","step_order":3,"step":"fx_revaluation","label":"Переоценка USD","amount_kzt":416941653.41250000}, 
+ {"from_date":"2026-09-01","to_date":"2026-10-01","step_order":4,"step":"new_write_offs","label":"Новые списания","amount_kzt":-1063441105.78250000}, 
+ {"from_date":"2026-09-01","to_date":"2026-10-01","step_order":5,"step":"write_off_reversals","label":"Возврат из списания","amount_kzt":5675019588.04700000}, 
+ {"from_date":"2026-09-01","to_date":"2026-10-01","step_order":6,"step":"portfolio_end","label":"Портфель на конец","amount_kzt":484674770832.75800000}]

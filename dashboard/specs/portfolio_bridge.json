@@ -1,0 +1,57 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "What moved the portfolio between snapshots (reporting.v_portfolio_bridge). Components sum to the total change.",
+  "title": {"text": "Из чего сложилось изменение портфеля", "subtitle": "01.09 → 01.10, млрд ₸", "anchor": "start"},
+  "data": {"url": "data/bridge.json"},
+  "transform": [
+    {"joinaggregate": [{"op": "max", "field": "to_date", "as": "last_to"}]},
+    {"filter": "datum.to_date === datum.last_to"},
+    {"pivot": "step", "value": "amount_kzt", "groupby": ["from_date", "to_date"]},
+    {"fold": ["repayments", "fx_revaluation", "new_write_offs", "write_off_reversals", "total"], "as": ["step", "amount_kzt"]},
+    {"calculate": "datum.step === 'total' ? datum.portfolio_end - datum.portfolio_start : datum[datum.step]", "as": "amount_kzt"},
+    {"calculate": "datum.amount_kzt / 1e9", "as": "bn"},
+    {"calculate": "{'repayments': 'Погашения', 'fx_revaluation': 'Переоценка USD', 'new_write_offs': 'Новые списания', 'write_off_reversals': 'Возврат из списания', 'total': 'Итого изменение'}[datum.step]", "as": "label"},
+    {"calculate": "{'repayments': 1, 'fx_revaluation': 2, 'new_write_offs': 3, 'write_off_reversals': 4, 'total': 5}[datum.step]", "as": "ord"},
+    {"calculate": "datum.bn >= 0 ? 'Рост' : 'Снижение'", "as": "direction"},
+    {"calculate": "format(datum.bn, '+,.2f')", "as": "bn_txt"}
+  ],
+  "width": 420,
+  "height": {"step": 40},
+  "encoding": {
+    "y": {
+      "field": "label", "type": "nominal", "title": null,
+      "sort": {"field": "ord", "op": "min", "order": "ascending"},
+      "axis": {"domain": false, "ticks": false, "labelPadding": 8}
+    }
+  },
+  "layer": [
+    {
+      "mark": {"type": "bar", "cornerRadiusEnd": 4, "height": {"band": 0.6}},
+      "encoding": {
+        "x": {"field": "bn", "type": "quantitative", "title": null, "scale": {"nice": true, "padding": 40},"axis": {"format": ",.0f", "grid": true}},
+        "color": {
+          "field": "direction", "type": "nominal", "title": null,
+          "scale": {"domain": ["Рост", "Снижение"], "range": ["#2a78d6", "#e34948"]},
+          "legend": {"orient": "top", "direction": "horizontal"}
+        },
+        "opacity": {"condition": {"test": "datum.step === 'total'", "value": 1}, "value": 0.85},
+        "tooltip": [
+          {"field": "label", "title": "Компонент"},
+          {"field": "amount_kzt", "title": "Сумма, ₸", "format": ",.0f"}
+        ]
+      }
+    },
+    {
+      "transform": [{"calculate": "max(datum.bn, 0)", "as": "label_x"}],
+      "mark": {"type": "text", "fontSize": 12, "align": "left", "dx": 6},
+      "encoding": {
+        "x": {"field": "label_x", "type": "quantitative"},
+        "text": {"field": "bn_txt"}
+      }
+    },
+    {
+      "mark": {"type": "rule", "strokeWidth": 1, "opacity": 0.5},
+      "encoding": {"x": {"datum": 0}}
+    }
+  ]
+}

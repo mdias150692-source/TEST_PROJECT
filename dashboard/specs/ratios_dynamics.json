@@ -1,0 +1,65 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Risk ratios on both snapshots (dumbbell): PAR30, PAR90, NPL, provisions/portfolio, top-10 concentration.",
+  "title": {"text": "Риск-метрики: 01.09 → 01.10", "subtitle": "доля портфеля, %", "anchor": "start"},
+  "data": {"url": "data/metrics.json"},
+  "transform": [
+    {"filter": "datum.unit === 'ratio' && datum.metric !== 'provisions_to_npl'"},
+    {"calculate": "utcFormat(toDate(datum.report_date), '%d.%m.%Y')", "as": "date_label"},
+    {"joinaggregate": [
+      {"op": "max", "field": "value", "as": "max_value"},
+      {"op": "max", "field": "report_date", "as": "last_date"}
+    ], "groupby": ["metric"]}
+  ],
+  "width": 420,
+  "height": {"step": 40},
+  "encoding": {
+    "y": {
+      "field": "label", "type": "nominal", "title": null,
+      "sort": {"field": "sort_order", "op": "min", "order": "ascending"},
+      "axis": {"domain": false, "ticks": false, "labelPadding": 8}
+    }
+  },
+  "layer": [
+    {
+      "mark": {"type": "rule", "strokeWidth": 2, "opacity": 0.35},
+      "encoding": {
+        "x": {"aggregate": "min", "field": "value", "type": "quantitative"},
+        "x2": {"aggregate": "max", "field": "value"},
+        "detail": {"field": "metric"}
+      }
+    },
+    {
+      "mark": {"type": "point", "filled": true, "size": 130, "opacity": 1},
+      "encoding": {
+        "x": {
+          "field": "value", "type": "quantitative", "title": null,
+          "axis": {"format": ".0%", "tickCount": 6, "grid": true},
+          "scale": {"domainMin": 0}
+        },
+        "color": {
+          "field": "date_label", "type": "ordinal", "title": "Дата среза",
+          "scale": {"range": ["#86b6ef", "#1c5cab"]},
+          "legend": {"orient": "top", "direction": "horizontal"}
+        },
+        "tooltip": [
+          {"field": "label", "title": "Метрика"},
+          {"field": "date_label", "title": "Дата"},
+          {"field": "value", "title": "Значение", "format": ".2%"},
+          {"field": "change_abs", "title": "Изм. к 01.09, доли", "format": "+.4f"}
+        ]
+      }
+    },
+    {
+      "transform": [
+        {"filter": "datum.report_date === datum.last_date"},
+        {"calculate": "format(datum.value, '.1%') + '  (' + format(datum.change_abs * 100, '+.2f') + ' п.п.)'", "as": "value_txt"}
+      ],
+      "mark": {"type": "text", "align": "left", "dx": 12, "fontSize": 12},
+      "encoding": {
+        "x": {"field": "max_value", "type": "quantitative"},
+        "text": {"field": "value_txt"}
+      }
+    }
+  ]
+}

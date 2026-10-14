@@ -1,0 +1,23 @@
+# secrets / local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# local tooling
+.claude/
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+
+# local database files, dumps, logs
+pgdata/
+*.dump
+*.backup
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
