@@ -9,7 +9,6 @@
 # Always filter or group by report_date: summing amounts across snapshots is meaningless.
 
 model: loan_portfolio
-label: Кредитный портфель (по кредитам)
 source: reporting.v_loan_portfolio
 
 dimensions:

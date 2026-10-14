@@ -31,7 +31,10 @@ BEGIN
     SELECT COUNT(*) INTO n FROM (SELECT 1 FROM raw.fx GROUP BY date, currency HAVING COUNT(*) > 1) t;
     IF n > 0 THEN RAISE EXCEPTION 'raw.fx has % duplicate (date, currency)', n; END IF;
 
-    -- 6. sane values
+    -- 6. sane values; flags strictly 0/1 (a '2' or 'Y' would otherwise silently become false)
+    SELECT COUNT(*) INTO n FROM raw.portfolio
+     WHERE trim(restructured) NOT IN ('0', '1') OR trim(written_off) NOT IN ('0', '1');
+    IF n > 0 THEN RAISE EXCEPTION '% rows with restructured/written_off not in (0, 1)', n; END IF;
     SELECT COUNT(*) INTO n FROM reporting.v_loan_snapshot
      WHERE principal_outstanding < 0 OR days_past_due < 0 OR currency NOT IN ('KZT', 'USD');
     IF n > 0 THEN RAISE EXCEPTION '% rows with negative amount/DPD or unknown currency', n; END IF;

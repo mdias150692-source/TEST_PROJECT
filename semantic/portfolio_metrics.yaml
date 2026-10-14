@@ -4,7 +4,6 @@
 # them across dates.
 
 model: portfolio_metrics
-label: Риск-метрики портфеля (по датам среза)
 source: reporting.v_portfolio_metrics
 
 dimensions:
