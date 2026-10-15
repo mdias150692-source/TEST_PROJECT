@@ -1,0 +1,57 @@
+# Rebuilds the project from scratch on every push: PostgreSQL 16 in a container,
+# load -> views -> SQL tests -> independent Python recomputation -> semantic model check,
+# then proves the build is idempotent and the committed dashboard data is up to date.
+name: build-and-verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          # Throwaway database that lives only for this CI job; not a real secret.
+          POSTGRES_PASSWORD: ci_throwaway_password
+          POSTGRES_DB: risk
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: risk
+      PGPASSWORD: ci_throwaway_password
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: psql client
+        run: |
+          command -v psql || (sudo apt-get update -q && sudo apt-get install -y -q postgresql-client)
+          psql --version
+          psql -X -At -c "SELECT version()"
+
+      - name: Build (schemas, load, views, SQL tests, exports)
+        run: ./scripts/build.sh
+
+      - name: Verify (Python recomputation + semantic model)
+        run: ./scripts/verify.sh
+
+      - name: Idempotent rebuild matches committed dashboard data
+        run: |
+          ./scripts/build.sh
+          test "$(psql -X -At -c 'SELECT COUNT(*) FROM raw.portfolio')" = "4060"
+          git diff --exit-code -- dashboard/data checks/sql_metrics.csv
